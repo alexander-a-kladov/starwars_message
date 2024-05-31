@@ -11,7 +11,7 @@ pygame.init()
 LETTER_SIZE=(110,120)
 LETTER_BOX=(25,10,80,100)
 
-SCR_SIZE=(1900,800)
+SCR_SIZE=(1400,800)
 
 screen = pygame.display.set_mode(SCR_SIZE, pygame.OPENGL | pygame.DOUBLEBUF)
 display = pygame.Surface(SCR_SIZE)
@@ -108,14 +108,11 @@ def drawTextLine(offset, line, fonts_img, t):
 if __name__ == "__main__":
     t = 0
     text = "Hello, World!"
-    speed = 0.0
-    angle = 0.0
     zoom = 10
-    zoom_speed = 0
-    MAX_SPEED = 180.0
-    MAX_ZOOM_SPEED = 25
-    MAX_ZOOM = 1000
-    MIN_ZOOM = -200
+    MAX_TICK = 100
+    MIN_TICK = 25
+    tick = MIN_TICK
+ 
     
     if len(sys.argv)>2:
         image_name = sys.argv[2]
@@ -146,6 +143,8 @@ if __name__ == "__main__":
     #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
+    keyup = True
+    pygame.key.set_repeat(100)
     while True:
         if crawl%80==0 and zoom:
             drawTextLine((1,SCR_SIZE[1]-100), text[sprawl_index], img, t)
@@ -160,20 +159,30 @@ if __name__ == "__main__":
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and keyup:
+                    keyup = False
                     if zoom > 0:
                         zoom = 0
                         pygame.mixer.music.pause()
                     else:
                         zoom = 1
                         pygame.mixer.music.unpause()
-                elif event.key == pygame.K_m:
+                elif event.key == pygame.K_m and keyup:
+                    keyup = False
                     if mute:
                         pygame.mixer.music.play()
                         mute = False
                     else:
                         pygame.mixer.music.stop()
                         mute = True
+                elif event.key == pygame.K_UP:
+                    if tick < MAX_TICK:
+                        tick+=1
+                elif event.key == pygame.K_DOWN:
+                    if tick > MIN_TICK:
+                        tick-=1
+            elif event.type == pygame.KEYUP:
+                keyup = True
                     
 
         if zoom>0:
@@ -190,5 +199,5 @@ if __name__ == "__main__":
     
         frame_tex.release()
     
-        clock.tick(25)
+        clock.tick(tick)
     
