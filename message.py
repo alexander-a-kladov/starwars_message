@@ -82,13 +82,16 @@ def getFontBox(index):
     return (x, y, LETTER_BOX[2], LETTER_BOX[3])
 
 def getSymbol(symb):
+    symb_dict={'.':37, ',':38, ';':39, ':':40, '$':41, '#':42, '\'':43, '!':44,'"':45,
+               '/':46, '?':47, '%':48, '&':49, '(':50, ')':51, '@':52 }
     if symb>='A' and symb<='Z':
         index = ord(symb)-ord('A')
         return getFontBox(index)
-    elif symb==',':
-        return getFontBox(38)
-    elif symb=='!':
-        return getFontBox(44)
+    if symb>='0' and symb<='9':
+        index = ord(symb)-ord('0')+27
+        return getFontBox(index)
+    if symb in symb_dict:
+        return getFontBox(symb_dict[symb])
     return False
     
 def drawTextLine(offset, line, fonts_img, t):
@@ -114,13 +117,13 @@ if __name__ == "__main__":
     MAX_ZOOM = 1000
     MIN_ZOOM = -200
     
-    if len(sys.argv)>1:
-        image_name = sys.argv[1]
+    if len(sys.argv)>2:
+        image_name = sys.argv[2]
     else:
         image_name = "images/img.png"
         
-    if len(sys.argv)>2:
-        message_name = sys.argv[2]
+    if len(sys.argv)>1:
+        message_name = sys.argv[1]
     else:
         message_name = "message.txt"
         
@@ -129,6 +132,7 @@ if __name__ == "__main__":
     pygame.mixer.music.set_volume(0.8)
     pygame.mixer.music.play()
     pygame.display.set_caption(f'{message_name}')
+    mute = False
     
     img = pygame.image.load(image_name)
     message_f = open(message_name, "r")
@@ -136,18 +140,14 @@ if __name__ == "__main__":
         text = []
         for line in message_f.readlines():
            text.append(line.strip())
-    
-    print(text)
-    print(len(text))
-    
-    pygame.key.set_repeat(150)
+
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
     #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
     while True:
-        if crawl%80==0:
+        if crawl%80==0 and zoom:
             drawTextLine((1,SCR_SIZE[1]-100), text[sprawl_index], img, t)
             sprawl_index+=1
 
@@ -163,8 +163,18 @@ if __name__ == "__main__":
                 if event.key == pygame.K_SPACE:
                     if zoom > 0:
                         zoom = 0
+                        pygame.mixer.music.pause()
                     else:
                         zoom = 1
+                        pygame.mixer.music.unpause()
+                elif event.key == pygame.K_m:
+                    if mute:
+                        pygame.mixer.music.play()
+                        mute = False
+                    else:
+                        pygame.mixer.music.stop()
+                        mute = True
+                    
 
         if zoom>0:
             crawl+=1
