@@ -11,8 +11,11 @@ pygame.init()
 LETTER_SIZE=(110,120)
 LETTER_BOX=(25,10,80,100)
 
-screen = pygame.display.set_mode((1000, 800), pygame.OPENGL | pygame.DOUBLEBUF)
-display = pygame.Surface((1000, 800))
+SCR_SIZE=(1900,800)
+
+screen = pygame.display.set_mode(SCR_SIZE, pygame.OPENGL | pygame.DOUBLEBUF)
+display = pygame.Surface(SCR_SIZE)
+back = pygame.Surface(SCR_SIZE)
 ctx = moderngl.create_context()
 
 clock = pygame.time.Clock()
@@ -49,13 +52,13 @@ out vec4 f_color;
 
 void main() {
     vec2 uv = uvs;
-    uv.y = uvs.y;
+    uv.y = pow(uvs.y*3.0,0.5)-0.9;
     
-    uv.x =  ((-0.5+0.5*uv.y)+uvs.x)/(uv.y);
+    uv.x =  ((-0.5+0.5*uvs.y)+uvs.x)/(uvs.y);
 
     vec3 color=vec3(0.0,0.0,0.0);
-    if (uv.x>=0.0 && uv.x<=1.0 && uv.y>=0.0 && uv.y<=1.0) {
-    	color = vec3(texture(tex, uv).rg, 0)*pow(uvs.y,3);
+    if (uv.x>0.0 && uv.x<1.0 && uv.y>0.0 && uv.y<1.0) {
+    	color = vec3(texture(tex, uv).rg, 0)*pow(uvs.y,1);
     }
     f_color = vec4(color, 1.0);
 }
@@ -93,17 +96,18 @@ def drawTextLine(offset, line, fonts_img, t):
     x,y = offset
     for symb in line.upper():
         font = getSymbol(symb)
-        y = offset[1]#+20*m.cos((t-5*c)/10.0)
+        y = offset[1]
         if font:
             display.blit(fonts_img.subsurface(font), (x,y))
-        x += LETTER_BOX[2]-40
+        x += LETTER_BOX[2]-42
         c+=1 
     
 if __name__ == "__main__":
     t = 0
+    text = "Hello, World!"
     speed = 0.0
     angle = 0.0
-    zoom = 500
+    zoom = 10
     zoom_speed = 0
     MAX_SPEED = 180.0
     MAX_ZOOM_SPEED = 25
@@ -116,62 +120,57 @@ if __name__ == "__main__":
         image_name = "images/img.png"
         
     if len(sys.argv)>2:
-        speed = float(sys.argv[2])
+        message_name = sys.argv[2]
     else:
-        speed = 0.0
+        message_name = "message.txt"
         
-    if speed < -180.0 or speed > 180.0:
-        speed = 0.0
-    
-    pygame.display.set_caption(f'Zoom {round(1.0/zoom,3)} rotation speed {-speed} deg zoom_speed {-zoom_speed/100.0}')
+    pygame.mixer.init()
+    pygame.mixer.music.load("song.mp3")
+    pygame.mixer.music.set_volume(0.8)
+    pygame.mixer.music.play()
+    pygame.display.set_caption(f'{message_name}')
     
     img = pygame.image.load(image_name)
+    message_f = open(message_name, "r")
+    if message_f:
+        text = []
+        for line in message_f.readlines():
+           text.append(line.strip())
+    
+    print(text)
+    print(len(text))
     
     pygame.key.set_repeat(150)
-
+    display.fill((0, 0, 0))
+    yellow = (0, 100, 100)
+    #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
+    sprawl_index = 0
+    crawl = 0
     while True:
-        display.fill((0, 0, 0))
-        yellow = (0, 100, 100)
-        pygame.draw.rect(display, yellow, pygame.Rect(0,0,1000,800))
-        drawTextLine((250,zoom), "Hello, World!", img, t)
-        drawTextLine((220,zoom+70), "of Good People", img, t)
-    
+        if crawl%80==0:
+            drawTextLine((1,SCR_SIZE[1]-100), text[sprawl_index], img, t)
+            sprawl_index+=1
+
+        if sprawl_index >= len(text):
+            sprawl_index = 0
         t += 1
     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    if speed < MAX_SPEED:
-                        speed += 0.5
-                elif event.key == pygame.K_RIGHT:
-                    if speed > -MAX_SPEED:
-                        speed -= 0.5
-                elif event.key == pygame.K_DOWN:
-                    if zoom_speed < MAX_ZOOM_SPEED:
-                        zoom_speed += 1
-                elif event.key == pygame.K_UP:
-                    if zoom_speed > -MAX_ZOOM_SPEED:
-                        zoom_speed -= 1
-                elif event.key == pygame.K_SPACE:
-                    speed = 0.0
-                    zoom_speed = 0
-            elif event.type == pygame.KEYUP:
-                zoom_speed = 0
-        pygame.display.set_caption(f'Zoom {zoom:.3f} rotation speed {-speed} deg zoom_speed {-zoom_speed/100.0}')
-        angle += speed
-    
-        if zoom >= MIN_ZOOM and zoom <= MAX_ZOOM:
-            zoom += zoom_speed
-        if zoom < MIN_ZOOM:
-            zoom_speed = 0
-            zoom = MIN_ZOOM
-        if zoom > MAX_ZOOM:
-            zoom_speed = 0
-            zoom = MAX_ZOOM
-    
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if zoom > 0:
+                        zoom = 0
+                    else:
+                        zoom = 1
+
+        if zoom>0:
+            crawl+=1
+            back.blit(display.subsurface(0,1,SCR_SIZE[0],SCR_SIZE[1]-1), (0,0))
+            display.blit(back, (0,0))
+    	
         frame_tex = surf_to_texture(display)
         frame_tex.use(0)
         program['tex'] = 0
