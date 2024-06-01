@@ -114,7 +114,7 @@ if __name__ == "__main__":
     t = 0
     text = "Hello, World!"
     zoom = 10
-    shadow = 1
+    shadow = True
     MAX_TICK = 100
     MIN_TICK = 25
     tick = MIN_TICK
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
-    pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
+    #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
     keyup = True
@@ -182,9 +182,9 @@ if __name__ == "__main__":
                 elif event.key == pygame.K_s and keyup:
                     keyup = False
                     if shadow:
-                        shadow = 0
+                        shadow = False
                     else:
-                        shadow = 1
+                        shadow = True
                 elif event.key == pygame.K_m and keyup:
                     keyup = False
                     if mute:
@@ -215,7 +215,7 @@ if __name__ == "__main__":
                 keyup = True
                     
 
-        pygame.display.set_caption(f'{message_name} speed {tick/25.0:.1f} proect_x = {proect_x/100.0} proect_y = {proect_y/100.0}')
+        pygame.display.set_caption(f'{message_name} speed {tick/25.0:.1f} proect_x = {proect_x/100.0} proect_y = {proect_y/100.0} shadow = {shadow} pause = {not zoom} music = {not mute}')
         if zoom>0:
             crawl+=1
             back.blit(display.subsurface(0,1,SCR_SIZE[0],SCR_SIZE[1]-1), (0,0))
@@ -226,7 +226,7 @@ if __name__ == "__main__":
         program['tex'] = 0
         program['proect_x'] = proect_x/100.0
         program['proect_y'] = proect_y/100.0
-        program['shadow_on'] = shadow
+        program['shadow_on'] = int(shadow)
         render_object.render(mode=moderngl.TRIANGLE_STRIP)
     
         pygame.display.flip()
