@@ -60,9 +60,9 @@ void main() {
 
     vec3 color=vec3(0.0,0.0,0.0);
     if (uv.x>0.0 && uv.x<1.0 && uv.y>0.0 && uv.y<1.0) {
-    	color = vec3(texture(tex, uv).rg, 0);
+    	color = vec3(texture(tex, uv).r*1.2, texture(tex, uv).g*0.8, 0);
     	if (shadow_on == 1) {
-    	   color*=uv.y;
+    	   color=uv.y*color;
     	}
     }
     f_color = vec4(color, 1.0);
@@ -112,36 +112,43 @@ def drawTextLine(offset, line, fonts_img, t):
     
 if __name__ == "__main__":
     t = 0
-    text = "Hello, World!"
-    zoom = 10
+    text = ["Hello, World!","","",""]
+    zoom = 1
     shadow = True
+    music = False
+    mute = True
     MAX_TICK = 100
     MIN_TICK = 25
-    tick = MIN_TICK
+    tick = 36
     MAX_PROECT_X = 100
     MIN_PROECT_X = 0
     proect_x = MAX_PROECT_X//2
     MAX_PROECT_Y = 100
     MIN_PROECT_Y = 0
-    proect_y = MAX_PROECT_Y//2
+    proect_y = 30
  
-    
-    if len(sys.argv)>2:
-        image_name = sys.argv[2]
-    else:
-        image_name = "images/img.png"
+    image_name = "images/img.png"
         
     if len(sys.argv)>1:
         message_name = sys.argv[1]
     else:
-        message_name = "message.txt"
-        
+        message_name = "hello_world.txt"
+    
+    if len(sys.argv)>2:
+        music_name = sys.argv[2]
+    else:
+        music_name = "song.mp3"
+    
     pygame.mixer.init()
-    pygame.mixer.music.load("song.mp3")
-    pygame.mixer.music.set_volume(0.8)
-    pygame.mixer.music.play()
+    try:
+        pygame.mixer.music.load(music_name)
+        pygame.mixer.music.set_volume(0.8)
+        pygame.mixer.music.play()
+        music = True
+        mute = False
+    except:
+        pass
     pygame.display.set_caption(f'{message_name}')
-    mute = False
     
     img = pygame.image.load(image_name)
     message_f = open(message_name, "r")
@@ -175,10 +182,12 @@ if __name__ == "__main__":
                     keyup = False
                     if zoom > 0:
                         zoom = 0
-                        pygame.mixer.music.pause()
+                        if music:
+                            pygame.mixer.music.pause()
                     else:
                         zoom = 1
-                        pygame.mixer.music.unpause()
+                        if music:
+                            pygame.mixer.music.unpause()
                 elif event.key == pygame.K_s and keyup:
                     keyup = False
                     if shadow:
@@ -187,12 +196,13 @@ if __name__ == "__main__":
                         shadow = True
                 elif event.key == pygame.K_m and keyup:
                     keyup = False
-                    if mute:
-                        pygame.mixer.music.play()
-                        mute = False
-                    else:
-                        pygame.mixer.music.stop()
-                        mute = True
+                    if music:
+                        if mute:
+                            pygame.mixer.music.play()
+                            mute = False
+                        else:
+                            pygame.mixer.music.stop()
+                            mute = True
                 elif event.key == pygame.K_UP:
                     if tick < MAX_TICK:
                         tick+=1
