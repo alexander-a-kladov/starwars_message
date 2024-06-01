@@ -78,37 +78,6 @@ def surf_to_texture(surf):
     tex.swizzle = 'BGRA'
     tex.write(surf.get_view('1'))
     return tex
-
-def getFontBox(index):
-    row = index // 9
-    col = index % 9
-    x = col*LETTER_SIZE[0]+LETTER_BOX[0]
-    y = row*LETTER_SIZE[1]+LETTER_BOX[1]
-    return (x, y, LETTER_BOX[2], LETTER_BOX[3])
-
-def getSymbol(symb):
-    symb_dict={'.':37, ',':38, ';':39, ':':40, '$':41, '#':42, '\'':43, '!':44,'"':45,
-               '/':46, '?':47, '%':48, '&':49, '(':50, ')':51, '@':52 }
-    if symb>='A' and symb<='Z':
-        index = ord(symb)-ord('A')
-        return getFontBox(index)
-    if symb>='0' and symb<='9':
-        index = ord(symb)-ord('0')+27
-        return getFontBox(index)
-    if symb in symb_dict:
-        return getFontBox(symb_dict[symb])
-    return False
-    
-def drawTextLine(offset, line, fonts_img, t):
-    c=0
-    x,y = offset
-    for symb in line.upper():
-        font = getSymbol(symb)
-        y = offset[1]
-        if font:
-            display.blit(fonts_img.subsurface(font), (x,y))
-        x += LETTER_BOX[2]-42
-        c+=1 
     
 if __name__ == "__main__":
     t = 0
@@ -126,8 +95,6 @@ if __name__ == "__main__":
     MAX_PROECT_Y = 100
     MIN_PROECT_Y = 0
     proect_y = 30
- 
-    image_name = "images/img.png"
         
     if len(sys.argv)>1:
         message_name = sys.argv[1]
@@ -155,19 +122,21 @@ if __name__ == "__main__":
     except:
         pass
     pygame.display.set_caption(f'{message_name}')
-    
-    img = pygame.image.load(image_name)
 
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
-    #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
+    pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
     keyup = True
     pygame.key.set_repeat(100)
+    
+    font = pygame.font.Font(None, 80)
+    
     while True:
-        if crawl%80==0 and zoom:
-            drawTextLine((1,SCR_SIZE[1]-100), text[sprawl_index], img, t)
+        if crawl%60==0 and zoom:
+            text_surf = font.render(text[sprawl_index], 1, (255, 255, 0))
+            display.blit(text_surf, (1,SCR_SIZE[1]-100))
             sprawl_index+=1
 
         if sprawl_index >= len(text):
