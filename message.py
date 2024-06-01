@@ -45,20 +45,25 @@ frag_shader = '''
 #version 430 core
 
 uniform sampler2D tex;
-//uniform float proect;
+uniform float proect_x;
+uniform float proect_y;
+uniform int shadow_on;
 
 in vec2 uvs;
 out vec4 f_color;
 
 void main() {
     vec2 uv = uvs;
-    uv.y = pow(uvs.y*3.0,0.5)-0.9;
+    uv.y = sqrt(uvs.y-proect_y)/(sqrt(1-proect_y)+0.15);
     
-    uv.x =  ((-0.5+0.5*uvs.y)+uvs.x)/(uvs.y);
+    uv.x =  ((-proect_x+proect_x*uvs.y)+uvs.x)/(2.0*proect_x*uvs.y+(1.0-2.0*proect_x));
 
     vec3 color=vec3(0.0,0.0,0.0);
     if (uv.x>0.0 && uv.x<1.0 && uv.y>0.0 && uv.y<1.0) {
-    	color = vec3(texture(tex, uv).rg, 0)*pow(uvs.y,1);
+    	color = vec3(texture(tex, uv).rg, 0);
+    	if (shadow_on == 1) {
+    	   color*=uv.y;
+    	}
     }
     f_color = vec4(color, 1.0);
 }
@@ -109,9 +114,16 @@ if __name__ == "__main__":
     t = 0
     text = "Hello, World!"
     zoom = 10
+    shadow = 1
     MAX_TICK = 100
     MIN_TICK = 25
     tick = MIN_TICK
+    MAX_PROECT_X = 100
+    MIN_PROECT_X = 0
+    proect_x = MAX_PROECT_X//2
+    MAX_PROECT_Y = 100
+    MIN_PROECT_Y = 0
+    proect_y = MAX_PROECT_Y//2
  
     
     if len(sys.argv)>2:
@@ -140,7 +152,7 @@ if __name__ == "__main__":
 
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
-    #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
+    pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
     keyup = True
@@ -167,6 +179,12 @@ if __name__ == "__main__":
                     else:
                         zoom = 1
                         pygame.mixer.music.unpause()
+                elif event.key == pygame.K_s and keyup:
+                    keyup = False
+                    if shadow:
+                        shadow = 0
+                    else:
+                        shadow = 1
                 elif event.key == pygame.K_m and keyup:
                     keyup = False
                     if mute:
@@ -181,10 +199,23 @@ if __name__ == "__main__":
                 elif event.key == pygame.K_DOWN:
                     if tick > MIN_TICK:
                         tick-=1
+                elif event.key == pygame.K_LEFT:
+                    if proect_x > MIN_PROECT_X:
+                        proect_x -= 5
+                elif event.key == pygame.K_RIGHT:
+                    if proect_x < MAX_PROECT_X:
+                        proect_x += 5
+                elif event.key == pygame.K_x:
+                    if proect_y > MIN_PROECT_Y:
+                        proect_y -= 5
+                elif event.key == pygame.K_z:
+                    if proect_y < MAX_PROECT_Y:
+                        proect_y += 5
             elif event.type == pygame.KEYUP:
                 keyup = True
                     
 
+        pygame.display.set_caption(f'{message_name} speed {tick/25.0:.1f} proect_x = {proect_x/100.0} proect_y = {proect_y/100.0}')
         if zoom>0:
             crawl+=1
             back.blit(display.subsurface(0,1,SCR_SIZE[0],SCR_SIZE[1]-1), (0,0))
@@ -193,6 +224,9 @@ if __name__ == "__main__":
         frame_tex = surf_to_texture(display)
         frame_tex.use(0)
         program['tex'] = 0
+        program['proect_x'] = proect_x/100.0
+        program['proect_y'] = proect_y/100.0
+        program['shadow_on'] = shadow
         render_object.render(mode=moderngl.TRIANGLE_STRIP)
     
         pygame.display.flip()
