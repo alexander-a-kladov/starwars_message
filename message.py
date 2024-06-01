@@ -139,6 +139,12 @@ if __name__ == "__main__":
     else:
         music_name = "song.mp3"
     
+    message_f = open(message_name, "r")
+    if message_f:
+        text = []
+        for line in message_f.readlines():
+           text.append(line.strip())
+    
     pygame.mixer.init()
     try:
         pygame.mixer.music.load(music_name)
@@ -151,11 +157,6 @@ if __name__ == "__main__":
     pygame.display.set_caption(f'{message_name}')
     
     img = pygame.image.load(image_name)
-    message_f = open(message_name, "r")
-    if message_f:
-        text = []
-        for line in message_f.readlines():
-           text.append(line.strip())
 
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
