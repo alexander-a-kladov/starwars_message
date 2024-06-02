@@ -86,9 +86,9 @@ if __name__ == "__main__":
     shadow = True
     music = False
     mute = True
-    MAX_TICK = 100
-    MIN_TICK = 25
-    tick = 36
+    MAX_TICK = 50
+    MIN_TICK = 10
+    tick = 25
     MAX_PROECT_X = 100
     MIN_PROECT_X = 0
     proect_x = MAX_PROECT_X//2
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     try:
         pygame.mixer.music.load(music_name)
         pygame.mixer.music.set_volume(0.8)
-        pygame.mixer.music.play()
+        pygame.mixer.music.play(-1)
         music = True
         mute = False
     except:
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     display.fill((0, 0, 0))
     yellow = (0, 100, 100)
-    pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
+    #pygame.draw.rect(display, yellow, pygame.Rect(0,0,SCR_SIZE[0],SCR_SIZE[1]))
     sprawl_index = 0
     crawl = 0
     keyup = True
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                     keyup = False
                     if music:
                         if mute:
-                            pygame.mixer.music.play()
+                            pygame.mixer.music.play(-1)
                             mute = False
                         else:
                             pygame.mixer.music.stop()
