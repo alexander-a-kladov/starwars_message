@@ -2,16 +2,12 @@
 import sys
 from array import array
 
-import math as m
 import pygame
 import moderngl
 
 pygame.init()
 
-LETTER_SIZE=(110,120)
-LETTER_BOX=(25,10,80,100)
-
-SCR_SIZE=(1400,800)
+SCR_SIZE=(1024,768)
 
 screen = pygame.display.set_mode(SCR_SIZE, pygame.OPENGL | pygame.DOUBLEBUF)
 display = pygame.Surface(SCR_SIZE)
@@ -131,10 +127,10 @@ if __name__ == "__main__":
     keyup = True
     pygame.key.set_repeat(100)
     
-    font = pygame.font.Font(None, 80)
+    font = pygame.font.Font(None, 60)
     
     while True:
-        if crawl%60==0 and zoom:
+        if crawl%42==0 and zoom:
             text_surf = font.render(text[sprawl_index], 1, (255, 255, 0))
             display.blit(text_surf, (1,SCR_SIZE[1]-100))
             sprawl_index+=1
